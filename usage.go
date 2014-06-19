@@ -45,7 +45,7 @@ func CreateProcessMonitor() *ProcessMonitor {
 	p.lastPtimeUser = curPtime.User
 	p.lastPtimeSys = curPtime.Sys
 	p.lastPtimeTotal = curPtime.Total
-	p.lastPReqTime = unixTimeMs()
+	p.lastPReqTime = UnixTimeMs()
 
 	return p
 }
@@ -65,7 +65,7 @@ func (p *ProcessMonitor) GetCpuUsage() *CpuUsage {
 		return nil
 	}
 
-	timeDelta := unixTimeMs() - p.lastPReqTime
+	timeDelta := UnixTimeMs() - p.lastPReqTime
 
 	return &CpuUsage{
 		Sys:   calcTime(p.lastPtimeSys, curPtime.Sys, timeDelta),
@@ -104,6 +104,6 @@ func calcTime(usageLast uint64, usageCur uint64, timeDelta uint64) float64 {
 	}
 }
 
-func unixTimeMs() uint64 {
-	return uint64(time.Now().UnixNano() % 1e6 / 1e3)
+func UnixTimeMs() uint64 {
+	return uint64(time.Now().UnixNano() / 1e6)
 }

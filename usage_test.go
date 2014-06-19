@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"log"
+
 	. "launchpad.net/gocheck"
 )
 
@@ -30,4 +32,10 @@ func (us *UsageSuite) TestCpuUsage(c *C) {
 func (us *UsageSuite) TestMemoryUsage(c *C) {
 	memUsage := us.processMonitor.GetMemoryUsage()
 	c.Assert(memUsage.Size, Not(Equals), 0)
+}
+
+func (us *UsageSuite) TestUnixTimeMs(c *C) {
+	unixTimeMs := UnixTimeMs()
+	log.Printf("%v", unixTimeMs)
+	c.Assert(unixTimeMs, Not(Equals), 0)
 }
