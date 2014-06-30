@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	sigar "github.com/cloudfoundry/gosigar"
+	sigar "github.com/wolfeidau/gosigar"
 )
 
 type ProcessMonitor struct {
