@@ -12,6 +12,7 @@ type ProcessMonitor struct {
 	lastPtimeUser  uint64
 	lastPtimeSys   uint64
 	lastPtimeTotal uint64
+	lastSnapshot   uint64
 }
 
 type CpuUsage struct {
@@ -44,6 +45,7 @@ func CreateProcessMonitor() *ProcessMonitor {
 	p.lastPtimeUser = curPtime.User
 	p.lastPtimeSys = curPtime.Sys
 	p.lastPtimeTotal = curPtime.Total
+	p.lastSnapshot = UnixTimeMs()
 
 	return p
 }
@@ -63,18 +65,24 @@ func (p *ProcessMonitor) GetCpuUsage() *CpuUsage {
 		return nil
 	}
 
-	totalDelta := p.lastPtimeTotal - curPtime.Total
-	userUsage := calcTime(p.lastPtimeUser, curPtime.User, totalDelta)
-	systemUsage := calcTime(p.lastPtimeSys, curPtime.Sys, totalDelta)
+	currentTime := UnixTimeMs()
 
+	timeDelta := currentTime - p.lastSnapshot
+
+	userUsage := calcTime(p.lastPtimeUser, curPtime.User, timeDelta)
+	systemUsage := calcTime(p.lastPtimeSys, curPtime.Sys, timeDelta)
+	totalUsage := calcTime(p.lastPtimeTotal, curPtime.Total, timeDelta)
+
+	// update snapshots
 	p.lastPtimeUser = curPtime.User
 	p.lastPtimeSys = curPtime.Sys
 	p.lastPtimeTotal = curPtime.Total
+	p.lastSnapshot = currentTime
 
 	return &CpuUsage{
 		Sys:   systemUsage,
 		User:  userUsage,
-		Total: userUsage + systemUsage,
+		Total: totalUsage,
 	}
 }
 
@@ -97,14 +105,14 @@ func (p *ProcessMonitor) GetMemoryUsage() *MemoryUsage {
 }
 
 // covers either zero activity or zero time between requests
-func calcTime(usageLast uint64, usageCur uint64, totalDelta uint64) float64 {
+func calcTime(usageLast uint64, usageCur uint64, timeDelta uint64) float64 {
 
 	usageDelta := usageCur - usageLast
 
-	if usageDelta == 0 || totalDelta == 0 {
+	if usageDelta == 0 || timeDelta == 0 {
 		return 0
 	} else {
-		return 100 * (float64(usageDelta)) / float64(totalDelta)
+		return 100.0 * (float64(usageDelta)) / float64(timeDelta)
 	}
 }
 
